@@ -45,6 +45,7 @@ int event_parse_option(struct event *e, char *option, char *value)
       e->cmp_type = LESS;
       return 0;
     }
+    return -1;
   }
   if (strcmp("expected_value", option) == 0) {
     strcpy(e->exp_value, value);
@@ -58,4 +59,5 @@ int event_parse_option(struct event *e, char *option, char *value)
     strcpy(e->email, value);
     return 0;
   }
+  return -1;
 }

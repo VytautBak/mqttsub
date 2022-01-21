@@ -3,21 +3,25 @@
 void get_formatted_details(char *details, struct event *e, char *value)
 {
   char time[30];
-  get_formatted_time(time);
-  sprintf(details,
-          "Event id= %d was triggered\n"
-          "Details:\n"
-          "Time: %s\n"
-          "MQTT Topic: %s\n"
-          "Variable: %s\n"
-          "Variable type: %s\n"
-          "Compare type: %s\n"
-          "Expected value: %s\n"
-          "Received value: %s\n"
-          "Email:%s\n",
-          e->id, time, e->topic, e->variable_name,
-          e->var_is_num ? "num" : "str", "cmp_type", e->exp_value, value,
-          e->email);
+  char operator[3];
+  if (from_int_to_operator(operator, e->cmp_type) == 0) {
+    get_formatted_time(time);
+    sprintf(details,
+            "Event id= %d was triggered\n"
+            "Details:\n"
+            "Time: %s\n"
+            "MQTT Topic: %s\n"
+            "Variable: %s\n"
+            "Variable type: %s\n"
+            "Compare type: %s\n"
+            "Expected value: %s\n"
+            "Received value: %s\n"
+            "Email:%s\n",
+            e->id, time, e->topic, e->variable_name,
+            e->var_is_num ? "num" : "str", "cmp_type", e->exp_value, value,
+            e->email);
+  } else
+    return -1;
 }
 
 void get_formatted_payload(char *payload, char *details)
@@ -37,6 +41,33 @@ void get_formatted_time(char *string)
           tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-void get_formatted_email(char *formatted, char *raw) {
-  fprintf("<%s>", raw);
+void get_formatted_email(char *formatted, char *raw)
+{
+  sprintf(formatted, "<%s>", raw);
+}
+
+int from_int_to_operator(char *ans, int num)
+{
+  switch (num) {
+    case 0:
+      strcpy(ans, "==");
+      return 0;
+    case 1:
+      strcpy(ans, "!=");
+      return 0;
+    case 2:
+      strcpy(ans, ">");
+      return 0;
+    case 3:
+      strcpy(ans, ">=");
+      return 0;
+    case 4:
+      strcpy(ans, "<");
+      return 0;
+    case 5:
+      strcpy(ans, "<=");
+      return 0;
+    default:
+      return -1;
+  }
 }

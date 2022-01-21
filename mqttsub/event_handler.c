@@ -2,28 +2,27 @@
 
 int matches_event(struct event *e, char *value)
 {
-  //int rc = validate_types(e, value);
-  //if (rc != 0) return rc;
-
+  int rc = validate_types(e, value);
+  if (rc != 0) return rc;
   switch (e->cmp_type) {
     case EQUAL:
-      return strcmp(e->exp_value, value) == 0;
-
+      if((strcmp(e->exp_value, value) == 0)) return 0;
+      return -1;
     case MORE:
-      return atoi(e->exp_value) > atoi(value);
-
+      if(atoi(e->exp_value) > atoi(value)) return 0;
+      return -1;
     case LESS:
-      return atoi(e->exp_value) < atoi(value);
-
+      if(atoi(e->exp_value) < atoi(value)) return 0;
+      return -1;
     case MORE_OR_EQUAL:
-      return atoi(e->exp_value) >= atoi(value);
-
+      if(atoi(e->exp_value) >= atoi(value)) return 0;
+      return -1;
     case LESS_OR_EQUAL:
-      return atoi(e->exp_value) <= atoi(value);
-
+      if(atoi(e->exp_value) <= atoi(value)) return 0;
+      return -1;
     case NOT_EQUAL:
-      return strcmp(e->exp_value, value) != 0;
-
+      if(strcmp(e->exp_value, value) != 0) return 0;
+      return -1;
     default:
       return -1;
   }
@@ -42,16 +41,8 @@ int validate_types(struct event *e, char *value)
               value, e->id);
       return -1;
     }
-  } else if (e->var_is_num == false) {
-    num = strtol(value, &tmp, 10);
-    if (tmp != value) {
-      fprintf(stderr,
-              "ERROR: Input string '%s' is not a string, while rule id=%d "
-              "specifies variable_type of 'str'\n",
-              value, e->id);
-      return -1;
-    }
   }
+  return 0;
 }
 
 int event_execute(struct event *e, char *value)
@@ -65,6 +56,12 @@ int event_execute(struct event *e, char *value)
   get_formatted_email(formatted_sender, "sender@freesmtpservers.com");
   get_formatted_details(details, e, value);
   get_formatted_payload(payload, details);
-  send_email(payload, "<receiver@freesmtpservers.com",
+
+  fprintf(stdout, "INFO: Executing event id=%d.....\n", e->id);
+  int rc = send_email(payload, "<receiver@freesmtpservers.com>",
              "<sender@freesmtpservers.com>", "smtp.freesmtpservers.com");
+  if(rc == 0) fprintf(stdout, "INFO: Sent email succesfully!\n");
+  else fprintf(stderr, "ERROR: Failed to send email. rc=%d\n",rc);
+            
 }
+

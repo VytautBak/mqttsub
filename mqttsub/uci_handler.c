@@ -2,7 +2,6 @@
 
 int proccess_message(char *topic, char *value)
 {
-  printf("attempting to parse topic = %s\n", topic);
   struct uci_context *context = uci_alloc_context();
   struct uci_package *package;
 
@@ -36,8 +35,12 @@ int proccess_message(char *topic, char *value)
       if (strcmp(topic, e.topic) == 0) {
         fprintf(stdout, "INFO: Matched input with event id=%d\n", e.id);
         if (matches_event(&e, value) == 0) {
+          
           fprintf(stdout, "INFO: Input satisfies event id=%d check\n", e.id);
           event_execute(&e, value);
+        }
+        else {
+          fprintf(stdout, "INFO: Input does not satisfy event id=%d check\n", e.id);
         }
       }
       k++;
