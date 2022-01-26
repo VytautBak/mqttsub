@@ -45,6 +45,7 @@ int event_parse_option(struct event *e, char *option, char *value)
       e->cmp_type = LESS;
       return 0;
     }
+    fprintf(stdout, "WARN: Failed to parse event id=%d option 'compare_type' (value '%s', allowed values: '>', '<', '>=', '<=', '==', '!='). Ignoring... \n", e->id, value);
     return -1;
   }
   if (strcmp("expected_value", option) == 0) {
