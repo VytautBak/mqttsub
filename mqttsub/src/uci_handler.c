@@ -1,8 +1,8 @@
 #include "uci_handler.h"
 
-int proccess_message(char *topic, char *value)
+int load_events(struct linked_list *list)
 {
-  printf("attempting to parse topic = %s\n", topic);
+  init_list(list);
   struct uci_context *context = uci_alloc_context();
   struct uci_package *package;
 
@@ -19,27 +19,24 @@ int proccess_message(char *topic, char *value)
     struct uci_section *section = uci_to_section(i);
     char *section_type = section->type;
     char *section_name = section->e.name;
-    struct event e;
+    struct event event;
 
     if (strcmp("rule", section_type) == 0) {
+      bool event_is_valid = true;
       uci_foreach_element(&section->options, j)
       {
         struct uci_option *option = uci_to_option(j);
         char *option_name = option->e.name;
-        e.id = k;
+        event.id = k;
         if (option->type == UCI_TYPE_STRING) {
-          event_parse_option(&e, option_name, option->v.string);
+          if (event_parse_option(&event, option_name, option->v.string) != 0) {
+            event_is_valid = false;
+          }
         } else {
           fprintf(stderr, "ERROR: There is a list type in config. Ignoring.\n");
         }
       }
-      if (strcmp(topic, e.topic) == 0) {
-        fprintf(stdout, "INFO: Matched input with event id=%d\n", e.id);
-        if (matches_event(&e, value) == 0) {
-          fprintf(stdout, "INFO: Input satisfies event id=%d check\n", e.id);
-          event_execute(&e, value);
-        }
-      }
+      if (event_is_valid) add_to_list_end(event, list);
       k++;
     }
   }
@@ -62,5 +59,3 @@ int uci_get_config_entry(char *path, char *value)
   uci_free_context(c);
   return 0;
 }
-
-

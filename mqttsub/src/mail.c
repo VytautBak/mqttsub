@@ -2,11 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 struct upload_status {
   size_t bytes_read;
 };
-
 
 char *payload_text;
 
@@ -34,8 +32,10 @@ static size_t payload_source(char *ptr, size_t size, size_t nmemb, void *userp)
   return 0;
 }
 
-void send_email(char *message, char *recipient, char *sender, char *url)
+int send_email(char *message, char *recipient, char *sender, char *url)
 {
+  // maybe change this?
+  
   payload_text = malloc(sizeof(char) * (strlen(message) + 1));
   strcpy(payload_text, message);
 
@@ -67,5 +67,7 @@ void send_email(char *message, char *recipient, char *sender, char *url)
 
     curl_easy_cleanup(curl);
     free(payload_text);
+    return res;
   }
+  return -1;
 }

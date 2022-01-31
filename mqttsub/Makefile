@@ -1,18 +1,30 @@
-CC:=gcc
-BIN:=mqttsub
-SRC:=$(wildcard *.c)
-OBJ:=$(SRC:.c=.o)
-LDFLAGS:= -Ilib/ -lmosquitto -lssl -lcrypto -luci -lcurl
-CPPFLAGS:= 
-CFLAGS:= -DWITH_TLS -DWITH_TLS_PSK
+include $(TOPDIR)/rules.mk
 
-PREFIX?=/usr
+PKG_NAME:=mqttsub
+PKG_RELEASE:=1
+PKG_VERSION:=1.0.0
 
-.PHONY: all clean install uninstall
+include $(INCLUDE_DIR)/package.mk
 
-all: $(BIN)
+define Package/mqttsub
+	CATEGORY:=Base system
+	TITLE:=mqttsub
+	DEPENDS:=+libopenssl +libmosquitto +libuci +libcurl
+endef
 
-$(BIN): $(OBJ)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-clean:
-	$(RM) $(BIN) $(OBJ)
+define Package/mqttsub/description
+	Listens to MQTT messages and executes user configured events
+endef
+
+define Package/mqttsub/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/rc.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/mqttsub $(1)/usr/bin
+	$(INSTALL_BIN) ./files/mqttsub.init $(1)/etc/init.d/mqttsub
+	$(INSTALL_CONF) ./files/mqttsub.config $(1)/etc/config/mqttsub
+	ln -s /etc/init.d/mqttsub $(1)/etc/rc.d/S99mqttsub
+endef
+
+$(eval $(call BuildPackage,mqttsub))

@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+
+start_service() {
+        local enabled
+        
+        config_load 'mqttsub'
+        config_get enabled mqttsub_sct 'enable' '0'
+        echo "$enabled"
+        
+		if [ "$enabled" -eq 1 ]; then
+			procd_open_instance mqttsub
+			procd_set_param command /usr/bin/mqttsub -h 192.168.1.1 -u admin -P admin -p 8883 -t abc --cafile /tmp/ca.cert.pem
+			procd_set_param stdout 1
+			procd_set_param stderr 1
+			procd_set_param pidfile /var/run/mqttsub.pid
+			procd_set_param file /etc/config/mqttsub
+			procd_close_instance
+	fi
+}
+
+service_triggers() {
+	procd_add_reload_trigger "mqttsub"
+}
+
+reload_service() {
+	procd_send_signal mqttsub mqttsub SIGHUP
+
+}
