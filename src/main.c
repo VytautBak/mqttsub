@@ -50,6 +50,8 @@ int main(int argc, char *argv[])
   }
   setup_sig_action(mosq, &cfg);
 
+  //event_execute(&(event_list.first->next->event), "abc123");
+  
   fprintf(stdout, "INFO: Succesfully connected to MQTT server\n");
   rc = mosquitto_loop_forever(mosq, 5000, 1);
   if (rc != 0) {

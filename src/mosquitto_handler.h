@@ -2,6 +2,7 @@
 #include "mosquitto.h"
 #include "argp_handler.h"
 #include "event_handler.h"
+#include "file.h"
 #ifndef MOSQUITTO_HANDLER_H
 #define MOSQUITTO_HANDLER_H
 

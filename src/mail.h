@@ -6,6 +6,6 @@
 #define MAIL_H
 
 
-int send_email(char *message, char *recipient, char *sender, char *url);
+int send_email(char *message, char *sender, char *receiver, char *url, char *username, char *password);
 
 #endif

@@ -7,11 +7,7 @@ int init_list(struct linked_list *ll)
     fprintf(stderr, "ERROR: Could not allocate memory for list\n");
     return -1;
   }
-  ll->last = malloc(sizeof(struct Node));
-  if (ll->last == NULL) {
-    fprintf(stderr, "ERROR: Could not allocate memory for list\n");
-    return -1;
-  }
+  ll->last = ll->first;
   ll->first->next = ll->last;
   return 0;
 }

@@ -1,8 +1,5 @@
 #include "event_handler.h"
 
-
-
-
 int matches_event(struct event *e, char *topic, char *value)
 {
   int rc = strcmp(e->topic, topic);
@@ -41,15 +38,16 @@ int validate_types(struct event *e, char *value)
   if (e->var_is_num == true) {
     num = strtol(value, &tmp, 10);
     if (tmp == value) {
-     /* fprintf(stderr,
-              "ERROR: Input string '%s' is not a number, while rule id=%d "
-              "specifies variable_type of 'num'\n",
-              value, e->id);*/
+      /* fprintf(stderr,
+               "ERROR: Input string '%s' is not a number, while rule id=%d "
+               "specifies variable_type of 'num'\n",
+               value, e->id);*/
       return -1;
     }
   }
   return 0;
 }
+
 int proccess_message(char *topic, char *message, struct linked_list *ll)
 {
   bool found = false;
@@ -57,14 +55,19 @@ int proccess_message(char *topic, char *message, struct linked_list *ll)
   struct Node *curr = ll->first;
   while (curr != ll->last) {
     if (matches_event(&(curr->event), topic, message) == 0) {
-      fprintf(stdout, "INFO: Message '%s' in topic '%s' has triggered event id=%d\n", message, topic, curr->event.id);
+      fprintf(stdout,
+              "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
+              message, topic, curr->event.id);
       event_execute(&(curr->event), message);
       found = true;
     }
 
     curr = curr->next;
   }
-  if(!found) fprintf(stdout, "INFO: Message '%s' in topic '%s' did not trigger any events\n", message, topic);
+  if (!found)
+    fprintf(stdout,
+            "INFO: Message '%s' in topic '%s' did not trigger any events\n",
+            message, topic);
 }
 
 int event_execute(struct event *e, char *value)
@@ -74,17 +77,20 @@ int event_execute(struct event *e, char *value)
   char formatted_sender[EVENT_MAX_EMAIL_LEN];
   char formatted_receiver[EVENT_MAX_EMAIL_LEN];
 
-  get_formatted_email(formatted_receiver, e->email);
   get_formatted_email(formatted_sender, "sender@freesmtpservers.com");
   get_formatted_details(details, e, value);
   get_formatted_payload(payload, details);
 
   fprintf(stdout, "INFO: Executing event id=%d.....\n", e->id);
-  int rc =
-      send_email(payload, "<receiver@freesmtpservers.com>",
-                 "<sender@freesmtpservers.com>", "smtp.freesmtpservers.com");
-  if (rc == 0)
-    fprintf(stdout, "INFO: Sent email succesfully!\n");
-  else
-    fprintf(stderr, "ERROR: Failed to send email. rc=%d\n", rc);
+  for (int i = 0; i < e->num_of_emails; i++) {
+    get_formatted_email(formatted_receiver, e->email[i]);
+
+    int rc = send_email(
+        payload, ....
+    if (rc == 0)
+      fprintf(stdout, "INFO: Sent email %d/%d succesfully!\n", i + 1,
+              e->num_of_emails);
+    else
+      fprintf(stderr, "ERROR: Failed to send email. rc=%d\n", rc);
+  }
 }

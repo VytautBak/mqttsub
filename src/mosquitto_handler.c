@@ -6,9 +6,9 @@ void mosq_connect_cb(struct mosquitto *mosq, void *obj, int result)
   struct config *cfg = (struct config *)obj;
 
   if (!result) {
-    for (int i = 0; i < cfg->num_of_topics; i++) {
-      mosquitto_subscribe(mosq, NULL, cfg->topics[i], 1);
-      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n", cfg->topics[i]);
+    for (int i = 0; i < cfg->mqtt_num_of_topics; i++) {
+      mosquitto_subscribe(mosq, NULL, cfg->mqtt_topics[i], 1);
+      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n", cfg->mqtt_topics[i]);
     }
   } else {
     fprintf(stderr, "%s\n", mosquitto_connack_string(result));
@@ -20,6 +20,7 @@ void mosq_message_cb(struct mosquitto *mosq, void *obj,
 {
   struct config *cfg = (struct config *)obj;
   proccess_message(message->topic, message->payload, cfg->event_list);
+  if(cfg->save_messages == true) write_to_file(cfg->save_file, message->payload, message->topic);
 }
 
 int create_and_configure_mosq(struct mosquitto **mosq, struct config *cfg, int argc, char argv[])
@@ -30,6 +31,7 @@ int create_and_configure_mosq(struct mosquitto **mosq, struct config *cfg, int a
 
   rc = get_mosq_config(cfg, argc, argv);
   if (rc != 0) return -1;
+
   *mosq = create_mosq(cfg);
   if (mosq == NULL) return -1;
 
@@ -62,25 +64,14 @@ struct mosquitto *create_mosq(struct config *cfg)
   return mosq;
 }
 
-void init_config(struct config *cfg)
-{
-  /* Set the default (optional) settings */
-  /* Using strings to make input validation easier */
-	cfg->port = "1883";
-	cfg->max_inflight = 20;
-	cfg->keepalive = "60";
-	cfg->protocol_version = MQTT_PROTOCOL_V31; 
-  //MQTT_PROTOCOL_V31
-}
-
 int mosq_connect(struct mosquitto *mosq, struct config *cfg)
 {
   char err[1024];
   int rc = 0;
 
-  int port = atoi(cfg->port);
+  int port = atoi(cfg->mqtt_port);
   int keepalive = 60;
-  rc = mosquitto_connect_bind(mosq, cfg->host, port, keepalive, NULL);
+  rc = mosquitto_connect_bind(mosq, cfg->mqtt_host, port, keepalive, NULL);
   if (rc > 0) {
     if (rc == MOSQ_ERR_ERRNO) {
       strerror_r(errno, err, 1024);
@@ -98,8 +89,8 @@ int configure_mosq(struct mosquitto *mosq, struct config *cfg)
 {
   int rc;
 
-  if (strlen(cfg->username) != 0) {
-    rc = mosquitto_username_pw_set(mosq, cfg->username, cfg->password);
+  if (strlen(cfg->mqtt_username) != 0) {
+    rc = mosquitto_username_pw_set(mosq, cfg->mqtt_username, cfg->mqtt_password);
     if (rc != MOSQ_ERR_SUCCESS) {
       fprintf(stderr,
               "ERROR: Could not set mosquitto username and password, rc=%d",
@@ -108,8 +99,8 @@ int configure_mosq(struct mosquitto *mosq, struct config *cfg)
       return -1;
     }
   }
-  if (strlen(cfg->cert) != 0) {
-    rc = mosquitto_tls_set(mosq, cfg->cert, NULL, NULL, NULL, NULL);
+  if (strlen(cfg->mqtt_cert) != 0) {
+    rc = mosquitto_tls_set(mosq, cfg->mqtt_cert, NULL, NULL, NULL, NULL);
     if (rc != MOSQ_ERR_SUCCESS) {
       fprintf(stderr, "ERROR: Could not set CA file \n");
       // mosquitto_lib_cleanup();
@@ -117,9 +108,9 @@ int configure_mosq(struct mosquitto *mosq, struct config *cfg)
       return -1;
     }
   }
-  mosquitto_max_inflight_messages_set(mosq, cfg->max_inflight);
+  mosquitto_max_inflight_messages_set(mosq, cfg->mqtt_max_inflight);
 
-  mosquitto_opts_set(mosq, MOSQ_OPT_PROTOCOL_VERSION, &(cfg->protocol_version));
+  mosquitto_opts_set(mosq, MOSQ_OPT_PROTOCOL_VERSION, &(cfg->mqtt_protocol_version));
   return MOSQ_ERR_SUCCESS;
 }
 

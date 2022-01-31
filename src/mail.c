@@ -32,7 +32,7 @@ static size_t payload_source(char *ptr, size_t size, size_t nmemb, void *userp)
   return 0;
 }
 
-int send_email(char *message, char *recipient, char *sender, char *url)
+int send_email(char *message, char *sender, char *receiver, char *url, char *username, char *password)
 {
   // maybe change this?
   
@@ -47,13 +47,17 @@ int send_email(char *message, char *recipient, char *sender, char *url)
   curl = curl_easy_init();
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_PORT, 587);
+    curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+
     curl_easy_setopt(curl, CURLOPT_MAIL_FROM, sender);
-    recipients = curl_slist_append(recipients, recipient);
+
+    recipients = curl_slist_append(recipients, receiver);
     curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
     curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-
     /* Send the message */
     res = curl_easy_perform(curl);
 
