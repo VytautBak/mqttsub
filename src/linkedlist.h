@@ -1,11 +1,10 @@
 #ifndef LINKEDLIST
 #define LINKEDLIST
-
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "event.h"
 
 struct linked_list {
   struct Node *first;
@@ -13,13 +12,11 @@ struct linked_list {
 };
 
 struct Node {
-  struct event event;
+  void *data;
   struct Node *next;
 };
 
 int init_list(struct linked_list *ll);
-void dealloc_list(struct linked_list *ll);
-void add_to_list_end(struct event event, struct linked_list *ll);
-
-void wipe_list(struct linked_list *ll);
+void add_to_list_end(void *data, struct linked_list *ll);
+void wipe_list(struct linked_list *ll, bool free_data);
 #endif

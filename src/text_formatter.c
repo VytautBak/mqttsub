@@ -13,13 +13,11 @@ void get_formatted_details(char *details, struct event *e, char *value)
             "MQTT Topic: %s\n"
             "Variable: %s\n"
             "Variable type: %s\n"
-            "Compare type: %s\n"
+            "Compare type: %d\n"
             "Expected value: %s\n"
-            "Received value: %s\n"
-            "Email:%s\n",
+            "Received value: %s\n",
             e->id, time, e->topic, e->variable_name,
-            e->var_is_num ? "num" : "str", "cmp_type", e->exp_value, value,
-            e->email);
+            e->var_is_num ? "num" : "str", e->cmp_type, e->exp_value, value);
   } else
     return -1;
 }

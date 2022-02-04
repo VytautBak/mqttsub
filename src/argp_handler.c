@@ -1,5 +1,7 @@
 #include "argp_handler.h"
 
+extern struct linked_list topic_list;
+
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct config *cfg = state->input;
@@ -11,16 +13,18 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       cfg->mqtt_port = arg;
       break;
     case 'c':
+      cfg->mqtt_use_tls = true;
       cfg->mqtt_cert = arg;
       break;
     case 't':
-      cfg->mqtt_topics[cfg->mqtt_num_of_topics] = arg;
-      cfg->mqtt_num_of_topics++;
+      add_topic_to_topic_list(&topic_list, arg);
       break;
     case 'u':
+      cfg->mqtt_use_username = true;
       cfg->mqtt_username = arg;
       break;
     case 'P':
+      cfg->mqtt_use_pass = true;
       cfg->mqtt_password = arg;
       break;
     case 'k':
@@ -28,7 +32,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 's':
       cfg->save_messages = true;
-      cfg->save_file = arg;
       break;
     default:
       return ARGP_ERR_UNKNOWN;
@@ -44,21 +47,14 @@ static struct argp_option options[] = {
     {"topic", 't', "topic", 0, "Topic to listen to. May be repeated"},
     {"user", 'u', "user", 0, "Provide a username"},
     {"password", 'P', "password", 0, "Provide a password"},
-    {"keepalive", 'k', "keepalive", 0, "Keep alive in seconds for this client. Defaults to 60."},
-    {"save", 's', "FILE", 0, "Specify file to save all received messages to"},
+    {"keepalive", 'k', "keepalive", 0,
+     "Keep alive in seconds for this client. Defaults to 60."},
+    {"save", 's', 0, 0, "Save all received messages to /var/log/mqttsub.db"},
     {0}};
 static struct argp argp = {options, parse_opt, "", ""};
 
 int get_mosq_config(struct config *cfg, int argc, char argv[])
 {
-  /* Set default values for arguments */
-  cfg->mqtt_cert = "";
-  cfg->mqtt_host = "";
-  cfg->mqtt_password = "";
-  cfg->mqtt_username = "";
-  cfg->mqtt_num_of_topics = 0;
-  for (int i = 0; i < MAX_NUM_OF_TOPICS; i++) cfg->mqtt_topics[i] = "";
-
   /* Parse arguments */
   argp_parse(&argp, argc, argv, 0, 0, cfg);
   int rc = argp_validate(cfg);
@@ -84,24 +80,29 @@ int argp_validate(struct config *cfg)
               cfg->mqtt_port);
       return -1;
     }
-  }
-  if (cfg->mqtt_num_of_topics == 0) {
-    fprintf(stderr, "ERROR: No topics given\n");
-    return -1;
-  }
 
-  for (int i = 0; i < cfg->mqtt_num_of_topics; i++) {
-    if(validate_topic(cfg->mqtt_topics[i]) == -1) {
-      fprintf(stderr, "ERROR: Invalid topic name '%s'. Does it contain '+' or '#'?\n");
+    if (cfg->mqtt_use_tls == true) {
+      if(access(cfg->mqtt_cert, F_OK != 0)){
+        fprintf(stderr, "ERROR: Could not access cafile\n");
+        return -1;
+      }
+    }
+    if((cfg->mqtt_use_pass && !cfg->mqtt_use_username) || (!cfg->mqtt_use_pass && cfg->mqtt_use_username)) {
+      fprintf(stderr, "ERROR: Both username and password must be provided if one is\n");
+      return -1;
     }
   }
 
-  if (strlen(cfg->mqtt_password) != 0 && strlen(cfg->mqtt_username) == 0) {
-    fprintf(stdout,
-            "WARN: Cannot use password while not using username. Ignoring "
-            "password...\n");
+  struct Node *curr = topic_list.first;
+  struct topic *t;
+  while(curr != NULL) {
+    t = curr->data;
+    if(validate_topic(t->name) != 0) {
+      fprintf(stderr, "Incorrect topic. Does it contain '+' or '#'?\n");
+      return -1;
+    }
+    curr = curr->next;
   }
-
   return 0;
 }
 
@@ -109,8 +110,8 @@ int validate_topic(char *topic)
 {
   /* MQTT protocol considers '+' and '#' as wildcards */
   char *c = topic;
-  for(int i = 0; i < strlen(topic); i++){
-    if(*c == '+' || *c == '#') return -1;
+  for (int i = 0; i < strlen(topic); i++) {
+    if (*c == '+' || *c == '#') return -1;
     c++;
   }
   return 0;

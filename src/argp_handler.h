@@ -2,6 +2,7 @@
 #include <string.h>
 #include "mosquitto.h"
 #include "mqtt_config.h"
+#include <unistd.h>
 
 #ifndef ARGP_HANDLER
 #define ARGP_HANDLER

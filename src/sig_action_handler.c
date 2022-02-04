@@ -3,7 +3,7 @@
 struct mosquitto *mosq;
 
 /* Create sigaction handler */
-void setup_sig_action(struct mosquitto *obj, struct config *obj2)
+void setup_sig_action(struct mosquitto *obj)
 {
   struct sigaction term;
   memset(&term, 0, sizeof(struct sigaction));

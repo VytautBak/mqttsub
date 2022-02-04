@@ -6,6 +6,14 @@ int event_parse_option(struct event *e, char *option, char *value)
 {
   // int rc = parse_string("topic", option, value, e->topic);
   RETURN_IF_SUCCESSFUL(parse_string("topic", option, value, e->topic));
+  RETURN_IF_SUCCESSFUL(parse_string("SMTP_URL", option, value, e->smtp_url));
+  RETURN_IF_SUCCESSFUL(
+      parse_string("sender_email", option, value, e->sender_email));
+
+  RETURN_IF_SUCCESSFUL(
+      parse_string("SMTP_username", option, value, e->smtp_username));
+  RETURN_IF_SUCCESSFUL(
+      parse_string("SMTP_password", option, value, e->smtp_password));
 
   RETURN_IF_SUCCESSFUL(
       parse_string("expected_value", option, value, e->exp_value));
@@ -26,21 +34,29 @@ int event_parse_option(struct event *e, char *option, char *value)
  * (type uci_list) */
 int event_parse_emails(struct event *e, struct uci_list *list, char *option)
 {
-  if (strcmp("email", option) != 0) return -1;
+  if (strcmp("receiver_email", option) != 0) return -1;
   struct uci_element *i;
   uci_foreach_element(list, i)
   {
-    strcpy(e->email[e->num_of_emails], i->name);
-    e->num_of_emails++;
+    char *email = malloc(sizeof(char) * 100);
+
+    strcpy(email, i->name);
+
+
+    add_to_list_end(email, &(e->receiver_emails));
   }
   return 0;
 }
 
 int parse_email(char *option, char *value, struct event *e)
 {
-  if (strcmp("email", option) == 0) {
-    strcpy(e->email[e->num_of_emails], value);
-    e->num_of_emails++;
+  if (strcmp("receiver_email", option) == 0) {
+    char *email = malloc(sizeof(char) * 100);
+
+    strcpy(email, value);
+
+
+    add_to_list_end(email, &(e->receiver_emails));
     return 0;
   }
   return -1;

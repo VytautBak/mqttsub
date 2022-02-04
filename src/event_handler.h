@@ -14,5 +14,5 @@ enum { EQUAL, NOT_EQUAL, MORE, LESS, MORE_OR_EQUAL, LESS_OR_EQUAL };
 int validate_types(struct event *e, char *value);
 int matches_event(struct event *e, char *topic, char *value);
 int event_execute(struct event *e, char *value);
-int proccess_message(char *topic, char *message, struct linked_list *ll);
+int proccess_message(char *topic, char *message);
 #endif

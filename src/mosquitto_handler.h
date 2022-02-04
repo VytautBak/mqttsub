@@ -1,6 +1,11 @@
 
 #include "mosquitto.h"
+#include "mqtt_config.h"
+#include "linkedlist.h"
+#include <stdio.h>
+#include <errno.h>
 #include "argp_handler.h"
+
 #include "event_handler.h"
 #include "file.h"
 #ifndef MOSQUITTO_HANDLER_H

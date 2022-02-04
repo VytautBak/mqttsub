@@ -2,40 +2,35 @@
 
 int init_list(struct linked_list *ll)
 {
-  ll->first = malloc(sizeof(struct Node));
-  if (ll->first == NULL) {
-    fprintf(stderr, "ERROR: Could not allocate memory for list\n");
-    return -1;
-  }
-  ll->last = ll->first;
-  ll->first->next = ll->last;
+  ll->first = NULL;
   return 0;
 }
 
-void add_to_list_end(struct event event, struct linked_list *ll)
+void add_to_list_end(void *data, struct linked_list *ll)
+{
+/*ADD CHECK INCASE MALLOC FAILS*/
+
+  if (ll->first == NULL) {
+    ll->first = malloc(sizeof(struct Node));
+    ll->first->next = NULL;
+    ll->first->data = data;
+    return;
+  } else {
+    struct Node *tmp = malloc(sizeof(struct Node));
+    tmp->data = data;
+    tmp->next = ll->first;
+    ll->first = tmp;
+  }
+}
+
+void wipe_list(struct linked_list *ll, bool free_data)
 {
   struct Node *curr = ll->first;
-  while (curr->next != ll->last) {
+  struct Node *tmp;
+  while (curr != NULL) {
+    tmp = curr;
     curr = curr->next;
-  }
-  curr->next = malloc(sizeof(struct Node));
-  curr->next->event = event;
-  curr->next->next = ll->last;
-}
-
-void wipe_list(struct linked_list *ll)
-{
-  struct Node *curr = ll->first->next;
-  while (curr->next != ll->last) {
-    struct Node *tmp = curr;
-    curr = curr->next;
+    if (free_data == 1) free(tmp->data);
     free(tmp);
   }
-  ll->first->next = ll->last;
-}
-
-void dealloc_list(struct linked_list *ll) {
-  free(ll->first);
-  free(ll->last);
-  free(ll);
 }

@@ -1,5 +1,7 @@
 #include "event_handler.h"
 
+extern struct linked_list topic_list;
+
 int matches_event(struct event *e, char *topic, char *value)
 {
   int rc = strcmp(e->topic, topic);
@@ -48,17 +50,45 @@ int validate_types(struct event *e, char *value)
   return 0;
 }
 
-int proccess_message(char *topic, char *message, struct linked_list *ll)
+int proccess_message(char *topic, char *message)
 {
   bool found = false;
 
-  struct Node *curr = ll->first;
+  struct Node *curr = topic_list.first;
+  struct topic *t;
+  struct event *e;
+  while (curr != NULL) {
+    t = curr->data;
+    if (strcmp(topic, t->name) == 0) {
+      struct Node *tmp = t->events.first;
+      while (tmp != NULL) {
+        e = tmp->data;
+        if (matches_event(e, topic, message) == 0) {
+          fprintf(
+              stdout,
+              "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
+              message, topic, e->id);
+          found = true;
+          event_execute(e, message);
+        }
+        tmp = tmp->next;
+      }
+    }
+    curr = curr->next;
+  }
+  if (!found)
+    fprintf(stdout,
+            "INFO: Message '%s' in topic '%s' did not trigger any events\n",
+            message, topic);
+
+  /*
   while (curr != ll->last) {
-    if (matches_event(&(curr->event), topic, message) == 0) {
+    if (matches_event(&(curr->data), topic, message) == 0) {
+      struct event *e = curr->data;
       fprintf(stdout,
               "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
-              message, topic, curr->event.id);
-      event_execute(&(curr->event), message);
+              message, topic, e->id);
+      event_execute(&(curr->data), message);
       found = true;
     }
 
@@ -67,7 +97,7 @@ int proccess_message(char *topic, char *message, struct linked_list *ll)
   if (!found)
     fprintf(stdout,
             "INFO: Message '%s' in topic '%s' did not trigger any events\n",
-            message, topic);
+            message, topic);*/
 }
 
 int event_execute(struct event *e, char *value)
@@ -77,20 +107,25 @@ int event_execute(struct event *e, char *value)
   char formatted_sender[EVENT_MAX_EMAIL_LEN];
   char formatted_receiver[EVENT_MAX_EMAIL_LEN];
 
-  get_formatted_email(formatted_sender, "sender@freesmtpservers.com");
+  get_formatted_email(formatted_sender, e->sender_email);
   get_formatted_details(details, e, value);
   get_formatted_payload(payload, details);
 
   fprintf(stdout, "INFO: Executing event id=%d.....\n", e->id);
-  for (int i = 0; i < e->num_of_emails; i++) {
-    get_formatted_email(formatted_receiver, e->email[i]);
 
-    int rc = send_email(
-        payload, ....
+  struct Node *curr = e->receiver_emails.first;
+  while (curr != NULL) {
+    get_formatted_email(formatted_receiver, curr->data);
+
+    /* printf("sender:%s\nreceiver:%s\nurl:%s\nuser:%s\npassword:%s\n",
+       formatted_sender, formatted_receiver, e->smtp_url, e->smtp_username,
+       e->smtp_password);*/
+    int rc = send_email(payload, formatted_sender, formatted_receiver,
+                        e->smtp_url, e->smtp_username, e->smtp_password);
     if (rc == 0)
-      fprintf(stdout, "INFO: Sent email %d/%d succesfully!\n", i + 1,
-              e->num_of_emails);
+      fprintf(stdout, "INFO: Sent email succesfully!\n");
     else
       fprintf(stderr, "ERROR: Failed to send email. rc=%d\n", rc);
+    curr = curr->next;
   }
 }

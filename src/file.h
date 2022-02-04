@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "text_formatter.h"
+#include <sqlite3.h>
 #ifndef FILE_H
 #define FILE_H
 
-int write_to_file(char *filename, char *message, char *topic);
+#define LOG_FILE "/var/log/mqttsub.db"
+
+int write_to_file(char *message, char *topic);
 
 
 

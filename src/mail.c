@@ -46,7 +46,7 @@ int send_email(char *message, char *sender, char *receiver, char *url, char *use
 
   curl = curl_easy_init();
   if (curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_URL, "smtp.mailgun.org");
     curl_easy_setopt(curl, CURLOPT_PORT, 587);
     curl_easy_setopt(curl, CURLOPT_USERNAME, username);
     curl_easy_setopt(curl, CURLOPT_PASSWORD, password);

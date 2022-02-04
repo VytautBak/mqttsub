@@ -2,7 +2,7 @@ CC:=gcc
 BIN:=mqttsub
 SRC:=$(wildcard *.c)
 OBJ:=$(SRC:.c=.o)
-LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp
+LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp -lsqlite3
 CPPFLAGS:= 
 CFLAGS:= 
 
@@ -13,6 +13,6 @@ PREFIX?=/usr
 all: $(BIN)
 
 $(BIN): $(OBJ)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) -g $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 clean:
 	$(RM) $(BIN) $(OBJ)
