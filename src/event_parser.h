@@ -2,7 +2,7 @@
 
 #ifndef EVENT_PARSER_H
 #define EVENT_PARSER_H
-//#include "event_handler.h"
+#include "mail_list.h"
 #include "uci.h"
 #include "event.h"
 int event_parse_option(struct event *e, char *option, char *value);

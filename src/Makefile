@@ -2,9 +2,9 @@ CC:=gcc
 BIN:=mqttsub
 SRC:=$(wildcard *.c)
 OBJ:=$(SRC:.c=.o)
-LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp -lsqlite3
+LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp -lsqlite3 -lcjson
 CPPFLAGS:= 
-CFLAGS:= 
+CFLAGS:= -g
 
 PREFIX?=/usr
 

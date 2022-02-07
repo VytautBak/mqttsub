@@ -61,17 +61,12 @@ int send_email(char *message, char *sender, char *receiver, char *url, char *use
     /* Send the message */
     res = curl_easy_perform(curl);
 
-    /* Check for errors */
-    if (res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-
     /* Free the list of recipients */
     curl_slist_free_all(recipients);
 
     curl_easy_cleanup(curl);
     free(payload_text);
-    return res;
+    return (int) res;
   }
   return -1;
 }

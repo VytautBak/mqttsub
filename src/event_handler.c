@@ -1,103 +1,86 @@
 #include "event_handler.h"
 
-extern struct linked_list topic_list;
+extern struct topic *topic_list;
 
-int matches_event(struct event *e, char *topic, char *value)
+int matches_event(struct event *e, struct variable *var)
 {
-  int rc = strcmp(e->topic, topic);
-  if (rc != 0) return -1;
+  if (e->var_is_num != var->is_num) return -1;
+  if (strcmp(e->variable_name, var->name) != 0) return -1;
 
-  rc = validate_types(e, value);
-  if (rc != 0) return rc;
+  char *ptr;
+  double num;
+  if (e->var_is_num) {
+    num = strtod(e->exp_value, &ptr);
+  }
   switch (e->cmp_type) {
     case EQUAL:
-      if ((strcmp(e->exp_value, value) == 0)) return 0;
+      if (e->var_is_num) {
+        return num == var->value.num;
+      }
+      if ((strcmp(e->exp_value, var->value.string) == 0)) return 0;
       return -1;
     case MORE:
-      if (atoi(e->exp_value) > atoi(value)) return 0;
+      if (num > var->value.num) return 0;
       return -1;
     case LESS:
-      if (atoi(e->exp_value) < atoi(value)) return 0;
+      if (num < var->value.num) return 0;
       return -1;
     case MORE_OR_EQUAL:
-      if (atoi(e->exp_value) >= atoi(value)) return 0;
+      if (num >= var->value.num) return 0;
       return -1;
     case LESS_OR_EQUAL:
-      if (atoi(e->exp_value) <= atoi(value)) return 0;
+      if (num <= var->value.num) return 0;
       return -1;
     case NOT_EQUAL:
-      if (strcmp(e->exp_value, value) != 0) return 0;
+      if (e->var_is_num) {
+        return num != var->value.num;
+      }
+      if (strcmp(e->exp_value, var->value.string) != 0) return 0;
       return -1;
     default:
       return -1;
   }
 }
 
-int validate_types(struct event *e, char *value)
-{
-  char *tmp;
-  int num;
-  if (e->var_is_num == true) {
-    num = strtol(value, &tmp, 10);
-    if (tmp == value) {
-      /* fprintf(stderr,
-               "ERROR: Input string '%s' is not a number, while rule id=%d "
-               "specifies variable_type of 'num'\n",
-               value, e->id);*/
-      return -1;
-    }
-  }
-  return 0;
-}
-
 int proccess_message(char *topic, char *message)
 {
+  struct variable *variable = malloc(sizeof(struct variable));
+  init_variable(variable);
+  if(parse_json_message(&variable, message) != 0) {
+    fprintf(stderr, "ERROR: Could not parse incoming message. Is it in JSON?\n");
+    return -1;
+  }
+
   bool found = false;
 
-  struct Node *curr = topic_list.first;
-  struct topic *t;
-  struct event *e;
-  while (curr != NULL) {
-    t = curr->data;
-    if (strcmp(topic, t->name) == 0) {
-      struct Node *tmp = t->events.first;
-      while (tmp != NULL) {
-        e = tmp->data;
-        if (matches_event(e, topic, message) == 0) {
-          fprintf(
-              stdout,
-              "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
-              message, topic, e->id);
-          found = true;
-          event_execute(e, message);
+  struct topic *curr_t = topic_list;
+  while (curr_t != NULL) {
+    if (strcmp(curr_t->name, topic) == 0) {
+      struct event *curr_e = curr_t->event_list;
+      while (curr_e != NULL) {
+        struct variable *curr_v = variable;
+        while (curr_v != NULL) {
+          if (matches_event(curr_e, curr_v) == 0) {
+            fprintf(
+                stdout,
+                "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
+                message, topic, curr_e->id);
+            found = true;
+            event_execute(curr_e, message);
+          }
+
+          curr_v = curr_v->next;
         }
-        tmp = tmp->next;
+        curr_e = curr_e->next;
       }
     }
-    curr = curr->next;
+
+    curr_t = curr_t->next;
   }
   if (!found)
     fprintf(stdout,
             "INFO: Message '%s' in topic '%s' did not trigger any events\n",
             message, topic);
-
-  /*
-  while (curr != ll->last) {
-    if (matches_event(&(curr->data), topic, message) == 0) {
-      struct event *e = curr->data;
-      fprintf(stdout,
-              "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
-              message, topic, e->id);
-      event_execute(&(curr->data), message);
-      found = true;
-    }
-
-    curr = curr->next;
-  }
-  if (!found)
-    fprintf(stdout,
-            "INFO: Message '%s' in topic '%s' did not trigger any events\n",
-            message, topic);*/
 }
 
 int event_execute(struct event *e, char *value)
@@ -113,19 +96,16 @@ int event_execute(struct event *e, char *value)
 
   fprintf(stdout, "INFO: Executing event id=%d.....\n", e->id);
 
-  struct Node *curr = e->receiver_emails.first;
+  struct mail *curr = e->receiver_address;
   while (curr != NULL) {
-    get_formatted_email(formatted_receiver, curr->data);
-
-    /* printf("sender:%s\nreceiver:%s\nurl:%s\nuser:%s\npassword:%s\n",
-       formatted_sender, formatted_receiver, e->smtp_url, e->smtp_username,
-       e->smtp_password);*/
+    get_formatted_email(formatted_receiver, curr->address);
     int rc = send_email(payload, formatted_sender, formatted_receiver,
                         e->smtp_url, e->smtp_username, e->smtp_password);
     if (rc == 0)
-      fprintf(stdout, "INFO: Sent email succesfully!\n");
+      fprintf(stdout, "INFO: Sent email to '%s' succesfully!\n", curr->address);
     else
-      fprintf(stderr, "ERROR: Failed to send email. rc=%d\n", rc);
+      fprintf(stdout, "WARN: Failed to send email to '%s' \n", curr->address);
+
     curr = curr->next;
   }
 }

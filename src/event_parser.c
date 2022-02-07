@@ -38,12 +38,16 @@ int event_parse_emails(struct event *e, struct uci_list *list, char *option)
   struct uci_element *i;
   uci_foreach_element(list, i)
   {
-    char *email = malloc(sizeof(char) * 100);
-
-    strcpy(email, i->name);
-
-
-    add_to_list_end(email, &(e->receiver_emails));
+    struct mail *m = malloc(sizeof(struct mail));
+    init_mail(m);
+    m->address = malloc(sizeof(char) * (strlen(i->name) + 1));
+    
+    strcpy(m->address, i->name);
+    if(e->receiver_address == NULL) e->receiver_address = m;
+    else {
+      m->next = e->receiver_address;
+      e->receiver_address = m;
+    }
   }
   return 0;
 }
@@ -51,12 +55,15 @@ int event_parse_emails(struct event *e, struct uci_list *list, char *option)
 int parse_email(char *option, char *value, struct event *e)
 {
   if (strcmp("receiver_email", option) == 0) {
-    char *email = malloc(sizeof(char) * 100);
-
-    strcpy(email, value);
-
-
-    add_to_list_end(email, &(e->receiver_emails));
+    struct mail *m = malloc(sizeof(struct mail));
+    init_mail(m);
+    m->address = malloc(sizeof(char) * (strlen(value) + 1));
+    strcpy(m->address, value);
+    if(e->receiver_address == NULL) e->receiver_address = m;
+    else {
+      m->next = e->receiver_address;
+      e->receiver_address = m;
+    }
     return 0;
   }
   return -1;

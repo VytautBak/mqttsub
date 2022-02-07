@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "linkedlist.h"
-
+#include "mail_list.h"
 #define EVENT_MAX_TOPIC_LEN 256
 #define EVENT_MAX_EXPVALUE_LEN 256
 #define EVENT_MAX_EMAIL_LEN 256
@@ -15,6 +15,8 @@
 #define MAX_URL_LEN 256
 #define SMTP_MAX_USERNAME_LEN 256
 #define SMTP_MAX_PASSWORD_LEN 256
+
+
 
 struct event {
   uint16_t id;
@@ -26,13 +28,15 @@ struct event {
   char variable_name[EVENT_MAX_VAR_NAME_LEN];
 
 
-  struct linked_list receiver_emails; 
+  struct mail *receiver_address;
   char sender_email[EVENT_MAX_EMAIL_LEN];
 
 
   char smtp_url[MAX_URL_LEN];
   char smtp_username[SMTP_MAX_USERNAME_LEN];
   char smtp_password[SMTP_MAX_PASSWORD_LEN];
+
+  struct event *next;
 };
 
 #endif

@@ -10,6 +10,6 @@
 #define CONFIG_NAME "mqttsub"
 
 
-int load_events(struct linked_list *list);
+int load_events(struct topic *topic_list);
 
 #endif

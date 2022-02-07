@@ -13,10 +13,11 @@
 #include "topic_list.h"
 #include "uci_handler.h"
 
-struct linked_list topic_list;
+struct topic *topic_list;
 
 void cleanup(struct mosquitto *mosq, struct linked_list *ll)
 {
+  /*
   if (mosq != NULL) mosquitto_destroy(mosq);
   mosquitto_lib_cleanup();
 
@@ -36,43 +37,48 @@ void cleanup(struct mosquitto *mosq, struct linked_list *ll)
 
     tcurr = tcurr->next;
   }
-  wipe_list(ll, true);
+  wipe_list(ll, true);*/
 
 }
 
 int main(int argc, char *argv[])
 {
-  if (is_only_instance() != 0) return -1;
+ // if (is_only_instance() != 0) return -1;
 
+  //for debug purposes
+  char *newargv[] = {"mqttsub", "-h", "192.168.1.1", "-u", "admin", "-P", "admin", "--cafile", "/home/studentas/Desktop/ca.cert.pem", "-p", "8883", "--save", "-t", "testing/testing", "-t", "abd"};
+  int newargc = 16;
   int rc;
 
   struct mosquitto *mosq = NULL;
   struct config cfg;
 
-  rc = init_list(&topic_list);
-  if (rc != 0) {
-    return rc;
-  }
+  topic_list = malloc(sizeof(struct topic));
+  /* Init topic_list linkedlist */
 
-  rc = create_and_configure_mosq(&mosq, &cfg, argc, argv);
+  init_topic(topic_list);
+
+  
+  rc = create_and_configure_mosq(&mosq, &cfg, newargc, newargv);
   if (rc != 0) {
     cleanup(mosq, &topic_list);
     return rc;
   }
+  
 
-  rc = load_events(&topic_list);
+  rc = load_events(topic_list);
   if (rc != 0) {
-    wipe_list(&topic_list, false);
+   // wipe_list(&topic_list, false);
     return rc;
   }
-
+  
    setup_sig_action(mosq);
-  // rc = mosquitto_loop_forever(mosq, 5000, 1);
+  rc = mosquitto_loop_forever(mosq, 5000, 1);
   if (rc != 0) {
     fprintf(stderr, "ERROR: %s\n", mosquitto_strerror(rc));
   }
 
 
-  cleanup(mosq, &topic_list);
+  //cleanup(mosq, &topic_list);*/
   return 0;
 }

@@ -1,11 +1,5 @@
 #include "linkedlist.h"
 
-int init_list(struct linked_list *ll)
-{
-  ll->first = NULL;
-  return 0;
-}
-
 void add_to_list_end(void *data, struct linked_list *ll)
 {
 /*ADD CHECK INCASE MALLOC FAILS*/
@@ -34,3 +28,4 @@ void wipe_list(struct linked_list *ll, bool free_data)
     free(tmp);
   }
 }
+

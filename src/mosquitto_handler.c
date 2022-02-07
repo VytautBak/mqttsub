@@ -1,17 +1,15 @@
 #include "mosquitto_handler.h"
 
-extern struct linked_list topic_list;
+extern struct topic *topic_list;
 
 void mosq_connect_cb(struct mosquitto *mosq, void *obj, int result)
 {
   if (!result) {
     fprintf(stdout, "INFO: Succesfully connected to MQTT server\n");
-    struct Node *curr = topic_list.first;
-    struct topic *t;
+    struct topic *curr = topic_list;
     while (curr != NULL) {
-      t = curr->data;
-      mosquitto_subscribe(mosq, NULL, t->name, 1);
-      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n", t->name);
+      mosquitto_subscribe(mosq, NULL, curr->name, 1);
+      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n", curr->name);
       curr = curr->next;
     }
   } else {
@@ -23,7 +21,6 @@ void mosq_message_cb(struct mosquitto *mosq, void *obj,
                      const struct mosquitto_message *message)
 {
   struct config *cfg = (struct config *)obj;
-  printf("received message %s\n", message->payload);
   proccess_message(message->topic, message->payload);
   if (cfg->save_messages == true)
     write_to_file(message->payload, message->topic);

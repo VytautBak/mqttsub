@@ -7,9 +7,11 @@
 
 struct topic {
   char *name;
-  struct linked_list events;
+  struct event *event_list;
+  struct topic *next;
 };
 
-int add_to_topic_list(struct linked_list *topic_list, struct event *event);
-void add_topic_to_topic_list(struct linked_list *topic_list, char *topic);
+int add_to_topic_list(struct topic *topic_list, struct event *event);
+void init_topic(struct topic *t);
+void add_topic_to_topic_list(struct topic **topic_list, char *topic);
 #endif

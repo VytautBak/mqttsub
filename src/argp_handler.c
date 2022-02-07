@@ -1,9 +1,9 @@
 #include "argp_handler.h"
 
-extern struct linked_list topic_list;
+extern struct topic *topic_list;
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
-{
+{ 
   struct config *cfg = state->input;
   switch (key) {
     case 'h':
@@ -17,6 +17,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       cfg->mqtt_cert = arg;
       break;
     case 't':
+
       add_topic_to_topic_list(&topic_list, arg);
       break;
     case 'u':
@@ -55,7 +56,6 @@ static struct argp argp = {options, parse_opt, "", ""};
 
 int get_mosq_config(struct config *cfg, int argc, char argv[])
 {
-  /* Parse arguments */
   argp_parse(&argp, argc, argv, 0, 0, cfg);
   int rc = argp_validate(cfg);
   return rc;
@@ -93,11 +93,10 @@ int argp_validate(struct config *cfg)
     }
   }
 
-  struct Node *curr = topic_list.first;
-  struct topic *t;
+  /*Loop through topics to verify they're valid*/
+  struct topic *curr = topic_list;
   while(curr != NULL) {
-    t = curr->data;
-    if(validate_topic(t->name) != 0) {
+    if(validate_topic(curr->name) != 0) {
       fprintf(stderr, "Incorrect topic. Does it contain '+' or '#'?\n");
       return -1;
     }
@@ -108,6 +107,7 @@ int argp_validate(struct config *cfg)
 
 int validate_topic(char *topic)
 {
+  if(topic == NULL) return -1;
   /* MQTT protocol considers '+' and '#' as wildcards */
   char *c = topic;
   for (int i = 0; i < strlen(topic); i++) {

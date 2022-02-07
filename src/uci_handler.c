@@ -1,6 +1,6 @@
 #include "uci_handler.h"
 
-int load_events(struct linked_list *topic_list)
+int load_events(struct topic *topic_list)
 {
   struct uci_context *context = uci_alloc_context();
   struct uci_package *package;
@@ -19,7 +19,8 @@ int load_events(struct linked_list *topic_list)
     char *section_type = section->type;
     char *section_name = section->e.name;
     struct event *event= malloc(sizeof(struct event));
-    init_list(&(event->receiver_emails));
+    event->receiver_address = NULL;
+
     if (event == NULL) {
       fprintf(stderr, "ERROR: Could not allocate memory for event \n");
       return -1;
@@ -50,12 +51,12 @@ int load_events(struct linked_list *topic_list)
       if (event_is_valid) {
         int rc = add_to_topic_list(topic_list, event);
         if(rc != 0) {
-        wipe_list(&(event->receiver_emails), true);
+        //wipe_list(&(event->receiver_emails), true);
         free(event);
         }
       }
       else {
-        wipe_list(&(event->receiver_emails), true);
+       // wipe_list(&(event->receiver_emails), true);
         free(event);
       }
       k++;
@@ -65,21 +66,4 @@ int load_events(struct linked_list *topic_list)
     }
   }
   uci_free_context(context);
-}
-
-int uci_get_config_entry(char *path, char *value)
-{
-  struct uci_context *c;
-  struct uci_ptr ptr;
-
-  c = uci_alloc_context();
-  int rc = uci_lookup_ptr(c, &ptr, path, true);
-
-  if (rc != UCI_OK) {
-    fprintf(stderr, "Could not find entry: \"%s\"", path);
-    return rc;
-  }
-  strcpy(value, ptr.o->v.string);
-  uci_free_context(c);
-  return 0;
 }

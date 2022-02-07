@@ -1,24 +1,44 @@
 #include "topic_list.h"
 
-int add_to_topic_list(struct linked_list *topic_list, struct event *event)
+int add_to_topic_list(struct topic *topic_list, struct event *event)
 {
-  struct Node *curr = topic_list->first;
-  struct topic *e;
+  struct topic *currt = topic_list;
 
-  while (curr->next != NULL) {
-    e = curr->data;
-    if (strcmp(e->name, event->topic) == 0) {
-      add_to_list_end(event, &(e->events));
-      return 0;
+  while (currt != NULL) {
+    if (strcmp(currt->name, event->topic) == 0) {
+      if(currt->event_list == NULL) {
+        currt->event_list = event;
+        return 0;
+      }
+      else {
+        event->next = currt->event_list;
+        currt->event_list = event;
+        return 0;
+      }
     }
-    curr = curr->next;
+    currt = currt->next;
   }
+
   return -1;
 }
 
-void add_topic_to_topic_list(struct linked_list *topic_list, char *topic) {
-  struct topic *t = malloc(sizeof(struct topic));
-  t->name = topic;
-  init_list(&(t->events));
-  add_to_list_end(t, topic_list);
+void add_topic_to_topic_list(struct topic **topic_list, char *topic)
+{
+  if((*topic_list)->name == NULL) {
+    (*topic_list)->name = topic;
+  }
+  else {
+    struct topic *t = malloc(sizeof(struct topic));
+    t->event_list = NULL;
+    t->name = topic;
+    t->next = *topic_list;
+    *topic_list = t;
+  }
 }
+
+void init_topic(struct topic *t) {
+  t->event_list = NULL;
+  t->name = NULL;
+  t->next = NULL;
+}
+
