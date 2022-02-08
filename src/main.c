@@ -18,26 +18,6 @@ struct topic *topic_list;
 int main(int argc, char *argv[])
 {
   if (is_only_instance() != 0) return -1;
-/*
-  // for debug purposes
-  char *newargv[] = {"mqttsub",
-                     "-h",
-                     "192.168.1.1",
-                     "-u",
-                     "admin",
-                     "-P",
-                     "admin",
-                     "--cafile",
-                     "/home/studentas/Desktop/ca.cert.pem",
-                     "-p",
-                     "8883",
-                     "--save",
-                     "-t",
-                     "testing/testing",
-                     "-t",
-                     "abd"};
-  int newargc = 16;
-  int rc;*/
 
   struct mosquitto *mosq = NULL;
   struct config cfg;
