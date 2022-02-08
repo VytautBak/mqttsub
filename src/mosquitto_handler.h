@@ -1,15 +1,14 @@
 
-#include "mosquitto.h"
-#include "mqtt_config.h"
-#include <stdio.h>
 #include <errno.h>
-#include "argp_handler.h"
+#include <stdio.h>
 
+#include "argp_handler.h"
 #include "event_handler.h"
 #include "file.h"
+#include "mosquitto.h"
+#include "mqtt_config.h"
 #ifndef MOSQUITTO_HANDLER_H
 #define MOSQUITTO_HANDLER_H
-
 
 int create_and_configure_mosq(struct mosquitto **mosq, struct config *cfg, int argc, char argv[]);
 struct mosquitto *create_mosq(struct config *cfg);

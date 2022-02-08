@@ -6,16 +6,16 @@
 #include <stdio.h>
 
 union data {
-  double num;
-  char string[256];
+        double num;
+        char string[256];
 };
 
 struct variable {
-  char name[256];
-  union data value;
+        char name[256];
+        union data value;
 
-  bool is_num;
-  struct variable *next;
+        bool is_num;
+        struct variable *next;
 };
 
 int parse_json_message(struct variable **var, char *message);

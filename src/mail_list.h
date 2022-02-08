@@ -3,10 +3,9 @@
 
 #include <stdio.h>
 
-
 struct mail {
-  char address[512];
-  struct mail *next;
+        char address[512];
+        struct mail *next;
 };
 
 void init_mail(struct mail *m);

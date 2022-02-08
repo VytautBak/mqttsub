@@ -1,7 +1,6 @@
 #include "file_locker.h"
 
-struct flock get_file_lock(int type)
-{
+struct flock get_file_lock(int type) {
         struct flock fl;
         fl.l_whence = SEEK_SET; /* beginning of file */
         fl.l_start = 0;         /* offset from l_whence */
@@ -11,15 +10,13 @@ struct flock get_file_lock(int type)
         return fl;
 }
 
-int lock_file(int fd)
-{
+int lock_file(int fd) {
         struct flock fl = get_file_lock(F_WRLCK);
         int rc = fcntl(fd, F_SETLKW, &fl);
         return rc;
 }
 
-int unlock_file()
-{
+int unlock_file() {
         struct flock fl = get_file_lock(F_UNLCK);
         int fd = open(LOCKFILE, O_RDWR | O_CREAT, LOCKMODE);
         int rc = fcntl(fd, F_SETLK, &fl);
@@ -27,8 +24,7 @@ int unlock_file()
 }
 
 /*Checks if the file is currently locked by getting its lock type (F_UNLCK means it is not locked) */
-int file_is_unlocked(int fd)
-{
+int file_is_unlocked(int fd) {
         struct flock lck;
         lck.l_type = F_WRLCK;
         lck.l_whence = 0; /* beginning of file */
@@ -41,8 +37,7 @@ int file_is_unlocked(int fd)
 }
 
 /*Checks if there is another instance of the daemon by checking if the file is locked */
-int is_only_instance()
-{
+int is_only_instance() {
         int fd = open(LOCKFILE, O_RDWR | O_CREAT, LOCKMODE);
 
         if (fd < 0) {
