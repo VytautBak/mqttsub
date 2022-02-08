@@ -2,7 +2,7 @@ CC:=gcc
 BIN:=mqttsub
 SRC:=$(wildcard *.c)
 OBJ:=$(SRC:.c=.o)
-LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp -lsqlite3 -lcjson
+LDFLAGS:= -lmosquitto -lssl -lcrypto -luci -lcurl -largp -lsqlite3 -ljson-c
 CPPFLAGS:= 
 CFLAGS:= -g
 

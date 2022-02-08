@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "mosquitto.h"
-#include "linkedlist.h"
 #include "topic_list.h"
 #ifndef CONFIG_H
 #define CONFIG_H

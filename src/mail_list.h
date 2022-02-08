@@ -5,10 +5,11 @@
 
 
 struct mail {
-  char *address;
+  char address[512];
   struct mail *next;
 };
 
 void init_mail(struct mail *m);
+void wipe_mail_list(struct mail *m);
 
 #endif

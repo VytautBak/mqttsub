@@ -39,11 +39,15 @@ int event_parse_emails(struct event *e, struct uci_list *list, char *option)
   uci_foreach_element(list, i)
   {
     struct mail *m = malloc(sizeof(struct mail));
+    if (m == NULL) {
+      fprintf(stderr, "ERROR: Failed to allocate memory\n");
+      return -1;
+    }
     init_mail(m);
-    m->address = malloc(sizeof(char) * (strlen(i->name) + 1));
-    
+
     strcpy(m->address, i->name);
-    if(e->receiver_address == NULL) e->receiver_address = m;
+    if (e->receiver_address == NULL)
+      e->receiver_address = m;
     else {
       m->next = e->receiver_address;
       e->receiver_address = m;
@@ -56,10 +60,15 @@ int parse_email(char *option, char *value, struct event *e)
 {
   if (strcmp("receiver_email", option) == 0) {
     struct mail *m = malloc(sizeof(struct mail));
+    if (m == NULL) {
+      fprintf(stderr, "ERROR: Failed to allocate memory\n");
+      return -1;
+    }
     init_mail(m);
-    m->address = malloc(sizeof(char) * (strlen(value) + 1));
     strcpy(m->address, value);
-    if(e->receiver_address == NULL) e->receiver_address = m;
+    
+    if (e->receiver_address == NULL)
+      e->receiver_address = m;
     else {
       m->next = e->receiver_address;
       e->receiver_address = m;

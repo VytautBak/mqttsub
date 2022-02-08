@@ -9,7 +9,8 @@ void mosq_connect_cb(struct mosquitto *mosq, void *obj, int result)
     struct topic *curr = topic_list;
     while (curr != NULL) {
       mosquitto_subscribe(mosq, NULL, curr->name, 1);
-      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n", curr->name);
+      fprintf(stdout, "INFO: Succesfully subscribed to topic '%s'\n",
+              curr->name);
       curr = curr->next;
     }
   } else {
@@ -22,8 +23,9 @@ void mosq_message_cb(struct mosquitto *mosq, void *obj,
 {
   struct config *cfg = (struct config *)obj;
   proccess_message(message->topic, message->payload);
-  if (cfg->save_messages == true)
+  if (cfg->save_messages == true) {
     write_to_file(message->payload, message->topic);
+  }
 }
 
 int create_and_configure_mosq(struct mosquitto **mosq, struct config *cfg,
@@ -62,7 +64,6 @@ struct mosquitto *create_mosq(struct config *cfg)
         fprintf(stderr, "ERROR: Invalid id and/or clean_session.\n");
         break;
     }
-    mosquitto_lib_cleanup();
     return NULL;
   }
   return mosq;
@@ -72,18 +73,20 @@ int mosq_connect(struct mosquitto *mosq, struct config *cfg)
 {
   char err[1024];
   int rc = 0;
+  char *ptr;
 
-  int port = atoi(cfg->mqtt_port);
-  int keepalive = 60;
+  int port = strtol(cfg->mqtt_port, &ptr, 10);
+  int keepalive = strtol(cfg->mqtt_keepalive, &ptr, 10);
+
   rc = mosquitto_connect_bind(mosq, cfg->mqtt_host, port, keepalive, NULL);
   if (rc > 0) {
     if (rc == MOSQ_ERR_ERRNO) {
       strerror_r(errno, err, 1024);
       fprintf(stderr, "ERROR: %s\n", err);
     } else {
-      fprintf(stderr, "ERROR: (%s).\n", mosquitto_strerror(rc));
+      fprintf(stderr, "ERROR: %s\n", mosquitto_strerror(rc));
     }
-    mosquitto_lib_cleanup();
+
     return rc;
   }
   return MOSQ_ERR_SUCCESS;

@@ -45,9 +45,15 @@ int matches_event(struct event *e, struct variable *var)
 int proccess_message(char *topic, char *message)
 {
   struct variable *variable = malloc(sizeof(struct variable));
+  if(variable == NULL) {
+    fprintf(stderr, "ERROR: Failed to allocate memory\n");
+    return -1;
+  }
   init_variable(variable);
-  if(parse_json_message(&variable, message) != 0) {
-    fprintf(stderr, "ERROR: Could not parse incoming message. Is it in JSON?\n");
+  if (parse_json_message(&variable, message) != 0) {
+    fprintf(stderr,
+            "ERROR: Could not parse message '%s'. Is it in JSON?\n", message);
+    delete_variable(variable);
     return -1;
   }
 
@@ -81,6 +87,7 @@ int proccess_message(char *topic, char *message)
     fprintf(stdout,
             "INFO: Message '%s' in topic '%s' did not trigger any events\n",
             message, topic);
+  delete_variable(variable);
 }
 
 int event_execute(struct event *e, char *value)

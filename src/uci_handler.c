@@ -4,6 +4,7 @@ int load_events(struct topic *topic_list)
 {
   struct uci_context *context = uci_alloc_context();
   struct uci_package *package;
+  int rc;
 
   if (uci_load(context, CONFIG_NAME, &package) != UCI_OK) {
     uci_perror(context, "uci_load()");
@@ -39,24 +40,30 @@ int load_events(struct topic *topic_list)
         if (option->type == UCI_TYPE_STRING) {
           if (event_parse_option(event, option_name, option->v.string) != 0) {
             event_is_valid = false;
-            fprintf(stdout,
-                    "WARN: option '%s' with value '%s' in event id=%d could "
-                    "not be parsed. Ignoring.\n",
+            fprintf(stderr,
+                    "ERROR: option '%s' with value '%s' in event id=%d could "
+                    "not be parsed. Exiting.\n",
                     option_name, option->v.string, event->id);
+                    rc = -1;
+                    goto exit;
           }
         } else {
-          event_parse_emails(event, &option->v.list, option_name);
+          if(event_parse_emails(event, &option->v.list, option_name) != 0) {
+
+            rc = -1;
+            goto exit;
+          }
         }
       }
       if (event_is_valid) {
         int rc = add_to_topic_list(topic_list, event);
         if(rc != 0) {
-        //wipe_list(&(event->receiver_emails), true);
+          wipe_mail_list(event->receiver_address);
         free(event);
         }
       }
       else {
-       // wipe_list(&(event->receiver_emails), true);
+        wipe_mail_list(event->receiver_address);
         free(event);
       }
       k++;
@@ -65,5 +72,7 @@ int load_events(struct topic *topic_list)
       free(event);
     }
   }
+  exit:
   uci_free_context(context);
+  return rc;
 }

@@ -1,18 +1,17 @@
 #ifndef MESSAGE_PARSER_H
 #define MESSAGE_PARSER_H
 
-
-#include <stdio.h>
-#include <cjson/cJSON.h>
+#include <json-c/json.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 union data {
   double num;
-  char *string;
+  char string[256];
 };
 
-struct variable{
-  char *name;
+struct variable {
+  char name[256];
   union data value;
 
   bool is_num;

@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/mqttsub
 	CATEGORY:=Base system
 	TITLE:=mqttsub
-	DEPENDS:=+libopenssl +libmosquitto +libuci +libcurl
+	DEPENDS:=+libopenssl +libmosquitto +libuci +libcurl +libjson-c +libsqlite3
 endef
 
 define Package/mqttsub/description

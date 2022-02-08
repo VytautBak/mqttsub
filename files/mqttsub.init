@@ -3,15 +3,36 @@
 USE_PROCD=1
 
 start_service() {
-        local enabled
-        
+        local enabled        
         config_load 'mqttsub'
         config_get enabled mqttsub_sct 'enable' '0'
-        echo "$enabled"
         
 		if [ "$enabled" -eq 1 ]; then
+			config_get host mqttsub_sct host
+			config_get use_auth mqttsub_sct use_auth
+			config_get user_name mqttsub_sct user_name
+			config_get password mqttsub_sct password
+			config_get use_tls mqttsub_sct use_tls
+			config_get port mqttsub_sct port
+			config_get save_messages mqttsub_sct save_messages
+			config_get topic mqttsub_sct topic
+			config_get cert mqttsub_sct cert
+			formatted_topics="-t ${topic// / -t }"
+			formatted_tls=""
+			if [ "$use_tls" -eq 1 ]; then
+				formatted_tls="--cafile $cert"
+			fi
+			
+			formatted_login=""
+			if [ "$use_auth" -eq 1 ]; then
+				formatted_login="-u $user_name -P $password"
+			fi
+			formatted_save=""
+			if [ "$save_messages" -eq 1 ]; then
+				formatted_save="--save"
+			fi
 			procd_open_instance mqttsub
-			procd_set_param command /usr/bin/mqttsub -h 192.168.1.1 -u admin -P admin -p 8883 -t abc --cafile /tmp/ca.cert.pem
+			procd_set_param command /usr/bin/mqttsub -h $host -p $port $formatted_topics $formatted_tls $formatted_login $formatted_save
 			procd_set_param stdout 1
 			procd_set_param stderr 1
 			procd_set_param pidfile /var/run/mqttsub.pid
@@ -25,6 +46,6 @@ service_triggers() {
 }
 
 reload_service() {
-	procd_send_signal mqttsub mqttsub SIGHUP
-
+	stop
+	start
 }

@@ -2,7 +2,6 @@
 
 struct mosquitto *mosq;
 
-/* Create sigaction handler */
 void setup_sig_action(struct mosquitto *obj)
 {
   struct sigaction term;

@@ -1,52 +1,47 @@
 #include "message_parser.h"
 int parse_json_message(struct variable **var, char *message)
 {
-  cJSON *root = cJSON_Parse(message);
-  if (root == NULL) return -1;
+  json_object *jobj = json_tokener_parse(message);
+  if (jobj == NULL) return -1;
 
-  cJSON *element;
-  cJSON_ArrayForEach(element, root)
+  enum json_type type;
+  json_object_object_foreach(jobj, key, val)
   {
     struct variable *curr;
-    if((*var)->name == NULL) {
+    if ((*var)->name == NULL) {
       curr = *var;
-    }
-    else {
+    } else {
       curr = malloc(sizeof(struct variable));
       curr->next = *var;
       *var = curr;
     }
 
-
-    curr->name = malloc(sizeof(char) * (strlen(element->string) + 1));
-    strcpy(curr->name, element->string);
-
-    if(element->type == cJSON_String) {
-      curr->value.string = malloc(sizeof(char) * (strlen(element->valuestring) + 1));
-      strcpy(curr->value.string, element->valuestring);
-      curr->is_num = false;
+    strcpy(curr->name, key);
+    type = json_object_get_type(val);
+    switch (type) {
+      case json_type_double:
+        curr->value.num = json_object_get_double(val);
+        curr->is_num = true;
+        break;
+      case json_type_int:
+        curr->value.num = json_object_get_int(val);
+        curr->is_num = true;
+        break;
+      case json_type_string:
+        strcpy(curr->value.string, json_object_get_string(val));
+        curr->is_num = false;
+        break;
     }
-    if(element->type == cJSON_Number) {
-      curr->value.num = element->valuedouble;
-      curr->is_num = true;
-    }
-
   }
-  cJSON_Delete(root);
-  cJSON_Delete(element);
-  return 0;
+  json_object_put(jobj);
 }
 
-void init_variable(struct variable *var) {
-  var->name = NULL;
-  var->next = NULL;
-}
+void init_variable(struct variable *var) { var->next = NULL; }
 
-void delete_variable(struct variable *var) {
+void delete_variable(struct variable *var)
+{
   struct variable *tmp;
-  while(var != NULL) {
-    if(var->is_num == false) free(var->value.string); 
-    free(var->name);
+  while (var != NULL) {
     tmp = var;
     var = var->next;
     free(tmp);

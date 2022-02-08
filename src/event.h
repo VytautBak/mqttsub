@@ -5,13 +5,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "linkedlist.h"
+
 #include "mail_list.h"
 #define EVENT_MAX_TOPIC_LEN 256
 #define EVENT_MAX_EXPVALUE_LEN 256
 #define EVENT_MAX_EMAIL_LEN 256
-#define EVENT_MAX_VAR_NAME_LEN 256
-#define MAX_NUM_OF_EMAILS 10
+#define EVENT_MAX_VAR_NAME_LEN 50
 #define MAX_URL_LEN 256
 #define SMTP_MAX_USERNAME_LEN 256
 #define SMTP_MAX_PASSWORD_LEN 256
@@ -38,5 +37,6 @@ struct event {
 
   struct event *next;
 };
+void wipe_event_list(struct event *e);
 
 #endif

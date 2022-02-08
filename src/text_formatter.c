@@ -15,7 +15,7 @@ void get_formatted_details(char *details, struct event *e, char *value)
             "Variable type: %s\n"
             "Compare type: %d\n"
             "Expected value: %s\n"
-            "Received value: %s\n",
+            "Received message: %s\n",
             e->id, time, e->topic, e->variable_name,
             e->var_is_num ? "num" : "str", e->cmp_type, e->exp_value, value);
   } else
