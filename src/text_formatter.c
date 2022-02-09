@@ -39,28 +39,3 @@ void get_formatted_time(char *string) {
 void get_formatted_email(char *formatted, char *raw) {
         sprintf(formatted, "<%s>", raw);
 }
-
-int from_int_to_operator(char *ans, int num) {
-        switch (num) {
-                case 0:
-                        strcpy(ans, "==");
-                        return 0;
-                case 1:
-                        strcpy(ans, "!=");
-                        return 0;
-                case 2:
-                        strcpy(ans, ">");
-                        return 0;
-                case 3:
-                        strcpy(ans, ">=");
-                        return 0;
-                case 4:
-                        strcpy(ans, "<");
-                        return 0;
-                case 5:
-                        strcpy(ans, "<=");
-                        return 0;
-                default:
-                        return -1;
-        }
-}

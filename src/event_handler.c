@@ -60,23 +60,7 @@ int proccess_message(char *topic, char *message) {
         struct topic *curr_t = topic_list;
         while (curr_t != NULL) {
                 if (strcmp(curr_t->name, topic) == 0) {
-                        struct event *curr_e = curr_t->event_list;
-                        while (curr_e != NULL) {
-                                struct variable *curr_v = variable;
-                                while (curr_v != NULL) {
-                                        if (matches_event(curr_e, curr_v) == 0) {
-                                                fprintf(
-                                                    stdout,
-                                                    "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
-                                                    message, topic, curr_e->id);
-                                                found = true;
-                                                event_execute(curr_e, message);
-                                        }
-
-                                        curr_v = curr_v->next;
-                                }
-                                curr_e = curr_e->next;
-                        }
+                        found = find_and_execute_matching_events(variable, curr_t->event_list, message, topic);
                 }
 
                 curr_t = curr_t->next;
@@ -86,6 +70,30 @@ int proccess_message(char *topic, char *message) {
                         "INFO: Message '%s' in topic '%s' did not trigger any events\n",
                         message, topic);
         delete_variable(variable);
+}
+
+int find_and_execute_matching_events(struct variable *v, struct event *e, char *message, char *topic) {
+        bool found = false;
+        struct variable *curr_v = v;
+        struct event *curr_e = e;
+
+        while (curr_v != NULL) {
+                while (curr_e != NULL) {
+                        if (matches_event(curr_e, curr_v) == 0) {
+                                fprintf(
+                                    stdout,
+                                    "INFO: Message '%s' in topic '%s' has triggered event id=%d\n",
+                                    message, topic, curr_e->id);
+                                found = true;
+                                event_execute(curr_e, message);
+                        }
+
+                        curr_e = curr_e->next;
+                }
+
+                curr_v = curr_v->next;
+        }
+        return found;
 }
 
 int event_execute(struct event *e, char *value) {

@@ -97,7 +97,6 @@ int configure_mosq(struct mosquitto *mosq, struct config *cfg) {
                         fprintf(stderr,
                                 "ERROR: Could not set mosquitto username and password, rc=%d",
                                 rc);
-                        // mosquitto_lib_cleanup()
                         return -1;
                 }
         }
@@ -105,8 +104,6 @@ int configure_mosq(struct mosquitto *mosq, struct config *cfg) {
                 rc = mosquitto_tls_set(mosq, cfg->mqtt_cert, NULL, NULL, NULL, NULL);
                 if (rc != MOSQ_ERR_SUCCESS) {
                         fprintf(stderr, "ERROR: Could not set CA file \n");
-                        // mosquitto_lib_cleanup();
-
                         return -1;
                 }
         }

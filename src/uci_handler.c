@@ -3,6 +3,7 @@
 int load_events(struct topic *topic_list) {
         struct uci_context *context = uci_alloc_context();
         struct uci_package *package;
+        int id = 0;
         int rc;
 
         if (uci_load(context, CONFIG_NAME, &package) != UCI_OK) {
@@ -11,8 +12,7 @@ int load_events(struct topic *topic_list) {
                 return 1;
         }
 
-        struct uci_element *i, *j;  // Iteration variables
-        int k = 0;
+        struct uci_element *i;
         uci_foreach_element(&package->sections, i) {
                 struct uci_section *section = uci_to_section(i);
                 char *section_type = section->type;
@@ -26,34 +26,13 @@ int load_events(struct topic *topic_list) {
                 }
 
                 if (strcmp("rule", section_type) == 0) {
-                        bool event_is_valid = true;
-                        uci_foreach_element(&section->options, j) {
-                                struct uci_option *option = uci_to_option(j);
-                                char *option_name = option->e.name;
-
-                                /*Set the defaults for event*/
-                                event->id = k;
-
-                                if (option->type == UCI_TYPE_STRING) {
-                                        if (event_parse_option(event, option_name, option->v.string) != 0) {
-                                                event_is_valid = false;
-                                                fprintf(stderr,
-                                                        "ERROR: option '%s' with value '%s' in event id=%d could "
-                                                        "not be parsed. Exiting.\n",
-                                                        option_name, option->v.string, event->id);
-                                                rc = -1;
-                                                goto exit;
-                                        }
-                                } else {
-                                        if (event_parse_emails(event, &option->v.list, option_name) != 0) {
-                                                rc = -1;
-                                                goto exit;
-                                        }
-                                }
-                        }
-                        if (event_is_valid) {
+                        event->id = id;
+                        id++;
+                        rc = parse_section(section, event);
+                        if (rc == 0) {
                                 int rc = add_to_topic_list(topic_list, event);
                                 if (rc != 0) {
+                                        /*If event does not belong to any topic, it is not useful and is therefore deallocated*/
                                         wipe_mail_list(event->receiver_address);
                                         free(event);
                                 }
@@ -61,12 +40,33 @@ int load_events(struct topic *topic_list) {
                                 wipe_mail_list(event->receiver_address);
                                 free(event);
                         }
-                        k++;
                 } else {
                         free(event);
                 }
         }
-exit:
         uci_free_context(context);
-        return rc;
+        return 0;
+}
+
+int parse_section(struct uci_section *section, struct event *event) {
+        struct uci_element *j;
+        uci_foreach_element(&section->options, j) {
+                struct uci_option *option = uci_to_option(j);
+                char *option_name = option->e.name;
+                if (option->type == UCI_TYPE_STRING) {
+                        if (event_parse_option(event, option_name, option->v.string) != 0) {
+                                fprintf(stderr,
+                                        "ERROR: option '%s' with value '%s' in event id=%d could "
+                                        "not be parsed. Exiting.\n",
+                                        option_name, option->v.string, event->id);
+                                return -1;
+                        }
+                } else {
+                        if (event_parse_emails(event, &option->v.list, option_name) != 0) {
+                                fprintf(stderr, "ERROR: List element '%s' in config is not valid\n", option_name);
+                                return -1;
+                        }
+                }
+        }
+        return 0;
 }

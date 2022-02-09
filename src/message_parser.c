@@ -32,6 +32,7 @@ int parse_json_message(struct variable **var, char *message) {
                 }
         }
         json_object_put(jobj);
+        return 0;
 }
 
 void init_variable(struct variable *var) { var->next = NULL; }

@@ -4,8 +4,8 @@
 
 #include "argp_handler.h"
 #include "event_handler.h"
-#include "file.h"
-#include "mosquitto.h"
+#include "file_writer.h"
+#include <mosquitto.h>
 #include "mqtt_config.h"
 #ifndef MOSQUITTO_HANDLER_H
 #define MOSQUITTO_HANDLER_H

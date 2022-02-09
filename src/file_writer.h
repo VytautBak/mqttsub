@@ -7,6 +7,8 @@
 
 #define LOG_FILE "/var/log/mqttsub.db"
 
+int init_db();
 int write_to_file(char *message, char *topic);
+void close_db();
 
 #endif

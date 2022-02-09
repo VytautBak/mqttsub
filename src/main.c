@@ -39,6 +39,12 @@ int main(int argc, char *argv[]) {
         }
 
         setup_sig_action(mosq);
+
+        if (cfg.save_messages == true) {
+                rc = init_db();
+                if (rc != 0) goto cleanup;
+        }
+
         rc = mosquitto_loop_forever(mosq, 5000, 1);
         if (rc != 0) {
                 fprintf(stderr, "ERROR: %s\n", mosquitto_strerror(rc));
@@ -48,6 +54,8 @@ cleanup:
         wipe_topic_list(topic_list);
         if (mosq != NULL) mosquitto_destroy(mosq);
         mosquitto_lib_cleanup();
+        close_db();
+        unlock_file();
 
         return rc;
 }

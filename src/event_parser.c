@@ -9,7 +9,7 @@ int event_parse_option(struct event *e, char *option, char *value) {
         RETURN_IF_SUCCESSFUL(parse_string("SMTP_username", option, value, e->smtp_username));
         RETURN_IF_SUCCESSFUL(parse_string("SMTP_password", option, value, e->smtp_password));
         RETURN_IF_SUCCESSFUL(parse_string("expected_value", option, value, e->exp_value));
-        RETURN_IF_SUCCESSFUL(aparse_string("variable", option, value, e->variable_name));
+        RETURN_IF_SUCCESSFUL(parse_string("variable", option, value, e->variable_name));
         RETURN_IF_SUCCESSFUL(parse_email(option, value, e));
         RETURN_IF_SUCCESSFUL(parse_variable_type(option, value, e));
         RETURN_IF_SUCCESSFUL(parse_cmp_type(option, value, e));

@@ -10,5 +10,5 @@
 #define CONFIG_NAME "mqttsub"
 
 int load_events(struct topic *topic_list);
-
+int parse_section(struct uci_section *section, struct event *event);
 #endif
